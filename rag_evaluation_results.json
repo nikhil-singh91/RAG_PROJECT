@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "Hit Rate at K": 0.75,
+    "MRR (Mean Reciprocal Rank)": 0.625,
+    "Groundedness": 0.75,
+    "Correctness": 0.75,
+    "Refusal Rate": 0,
+    "Average Delay (seconds)": 2.2245,
+    "Total Questions Evaluated": 4
+  },
+  "test_cases": [
+    {
+      "question": "What is the problem statement and key issues in the manual leave handling system?",
+      "hit_rate_at_k": 1,
+      "mrr": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0,
+      "refusal": 0,
+      "cost": 0.0,
+      "delay_seconds": 2.352,
+      "judge_reason": "All claims in the chatbot's answer are directly supported by the 'Problem Statement & Objectives' section on page 2 of the retrieved document context. The answer is also factually correct and more comprehensive than the reference answer, including all points from the reference answer plus additional correct details from the context.",
+      "answer_preview": "The problem statement and key issues in the manual leave handling system are:\n*   Paperwork and scattered records [Proje..."
+    },
+    {
+      "question": "What frontend technology is used in the technology stack and architecture?",
+      "hit_rate_at_k": 1,
+      "mrr": 0.5,
+      "groundedness": 1.0,
+      "correctness": 1.0,
+      "refusal": 0,
+      "cost": 0.0,
+      "delay_seconds": 4.474,
+      "judge_reason": "The chatbot's answer accurately lists all frontend technologies (React, Vite, React Router) explicitly mentioned in the 'Technology Stack & Architecture' section of the provided document context. The reference answer is incomplete as it only mentions React, while the context clearly lists three frontend technologies. The chatbot's answer is therefore more comprehensive and correct based on the context.",
+      "answer_preview": "The frontend technologies used in the technology stack and architecture are:\n*   React [Project Objectives.pdf, Page 4]\n..."
+    },
+    {
+      "question": "What results and deliverables does the Employee Leave Management System provide?",
+      "hit_rate_at_k": 1,
+      "mrr": 1.0,
+      "groundedness": 1.0,
+      "correctness": 1.0,
+      "refusal": 0,
+      "cost": 0.0,
+      "delay_seconds": 1.506,
+      "judge_reason": "All claims in the chatbot's answer are directly supported by the 'What the project delivers' section on page 6 of the provided document context. The chatbot's answer is also factually correct and more comprehensive than the reference answer, including all points from the reference answer and additional supported details.",
+      "answer_preview": "The Employee Leave Management System provides the following results and deliverables:\n\n*   Centralized leave records [Pr..."
+    },
+    {
+      "question": "What is the step-by-step recipe for baking a traditional chocolate cake?",
+      "hit_rate_at_k": 0,
+      "mrr": 0.0,
+      "groundedness": 0.0,
+      "correctness": 0.0,
+      "refusal": 0,
+      "cost": 0.0,
+      "delay_seconds": 0.566,
+      "judge_reason": "The chatbot returned an API error message instead of attempting to answer the question or refusing based on the lack of relevant context. The retrieved documents contain no information about baking chocolate cakes. The reference answer correctly identifies the absence of relevant information, which the chatbot failed to do.",
+      "answer_preview": "\u26a0\ufe0f Gemini API rate limit or quota exceeded. Please wait a moment or check your Google AI Studio quota."
+    }
+  ]
+}

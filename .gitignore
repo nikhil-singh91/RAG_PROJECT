@@ -1,0 +1,30 @@
+# Environment Variables
+.env
+.env.local
+
+# Persistent Storage & Data
+vectorstore/
+data/uploads/
+*.db
+*.sqlite3
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE & OS Metadata
+.DS_Store
+.idea/
+.vscode/
+.agents/
+.claude/
+*.log
