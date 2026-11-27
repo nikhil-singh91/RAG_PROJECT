@@ -226,8 +226,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_chat, tab_upload, tab_explorer = st.tabs(
-    ["💬 Chat & Ask Questions", "📤 Upload & Process PDFs", "🔍 Vector Database Explorer"]
+tab_chat, tab_upload, tab_explorer, tab_eval = st.tabs(
+    [
+        "💬 Chat & Ask Questions",
+        "📤 Upload & Process PDFs",
+        "🔍 Vector Database Explorer",
+        "📊 Evaluation & Hit Rate",
+    ]
 )
 
 # ==========================================
@@ -439,6 +444,10 @@ with tab_chat:
 
                     # Display retrieved context and citations
                     if llm_res.citations:
+                        st.markdown(
+                            f"<span class='badge' style='background-color:#DCFCE7; color:#15803D;'>🎯 Retrieval Hit Rate: 1 (Found {len(llm_res.citations)} relevant chunks)</span>",
+                            unsafe_allow_html=True,
+                        )
                         with st.expander(f"📑 Retrieved Sources ({len(llm_res.citations)} citations)", expanded=True):
                             for cit in llm_res.citations:
                                 st.markdown(
@@ -504,3 +513,109 @@ with tab_explorer:
                 with st.expander(f"Chunk #{c_idx + 1} | Page {page} | ID: `{cid}` ({char_c} chars)"):
                     st.text(text)
                     st.json(meta)
+
+# ==========================================
+# TAB 4: RAG EVALUATION & HIT RATE BENCHMARK
+# ==========================================
+with tab_eval:
+    import json
+    st.subheader("📊 RAG Evaluation & Benchmark Metrics")
+    st.write(
+        "Evaluate your PDF RAG pipeline on standard retrieval and generation metrics: "
+        "**Hit Rate @ K**, **MRR**, **Groundedness (0/1)**, and **Correctness (0/1)**."
+    )
+
+    eval_json_path = Path("rag_evaluation_results.json")
+
+    # Action Button to re-run evaluation
+    eval_col1, eval_col2 = st.columns([1, 3])
+    with eval_col1:
+        run_eval_btn = st.button("🚀 Run Evaluation Benchmark", type="primary", use_container_width=True)
+
+    if run_eval_btn:
+        with st.spinner("⏳ Running RAG benchmark evaluation and LLM judge..."):
+            try:
+                from evaluate import run_rag_evaluation
+                records, summary_res = run_rag_evaluation()
+                st.success("✅ Evaluation benchmark completed successfully!")
+                time.sleep(1)
+                st.rerun()
+            except Exception as eval_err:
+                st.error(f"❌ Evaluation error: {eval_err}")
+
+    # Display saved evaluation results
+    if eval_json_path.exists():
+        try:
+            with open(eval_json_path, "r") as f:
+                eval_data = json.load(f)
+            
+            summary = eval_data.get("summary", {})
+            test_cases = eval_data.get("test_cases", [])
+
+            st.markdown("### 🏆 Benchmark Summary")
+            col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+
+            with col_m1:
+                hit_rate_val = summary.get("Hit Rate at K", 0.0)
+                st.markdown(
+                    f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{hit_rate_val}</div>
+                        <div class="metric-label">🎯 Hit Rate @ K</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            with col_m2:
+                mrr_val = summary.get("MRR (Mean Reciprocal Rank)", 0.0)
+                st.markdown(
+                    f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{mrr_val}</div>
+                        <div class="metric-label">📈 MRR (Rank)</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            with col_m3:
+                ground_val = summary.get("Groundedness", 0.0)
+                st.markdown(
+                    f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{ground_val}</div>
+                        <div class="metric-label">🛡️ Groundedness (0/1)</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+            with col_m4:
+                corr_val = summary.get("Correctness", 0.0)
+                st.markdown(
+                    f"""
+                    <div class="metric-card">
+                        <div class="metric-value">{corr_val}</div>
+                        <div class="metric-label">✅ Correctness (0/1)</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown(f"### 📋 Evaluated Test Cases ({len(test_cases)} Questions)")
+
+            for idx, tc in enumerate(test_cases, 1):
+                hit_badge = "<span class='badge' style='background-color:#DCFCE7; color:#15803D;'>Hit Rate: 1 (Hit)</span>" if tc.get("hit_rate_at_k") == 1 else "<span class='badge' style='background-color:#FEE2E2; color:#B91C1C;'>Hit Rate: 0 (Miss)</span>"
+                ground_badge = "<span class='badge' style='background-color:#DCFCE7; color:#15803D;'>Grounded: 1</span>" if tc.get("groundedness") == 1 else "<span class='badge' style='background-color:#FEE2E2; color:#B91C1C;'>Grounded: 0</span>"
+                corr_badge = "<span class='badge' style='background-color:#DCFCE7; color:#15803D;'>Correct: 1</span>" if tc.get("correctness") == 1 else "<span class='badge' style='background-color:#FEF3C7; color:#B45309;'>Correct: N/A or 0</span>"
+                refusal_badge = "<span class='badge' style='background-color:#E0E7FF; color:#4338CA;'>Refused: Yes</span>" if tc.get("refusal") == 1 else "<span class='badge'>Answered</span>"
+
+                with st.expander(f"**Question {idx}:** {tc['question']}"):
+                    st.markdown(f"{hit_badge} &nbsp; {ground_badge} &nbsp; {corr_badge} &nbsp; {refusal_badge}", unsafe_allow_html=True)
+                    st.write(f"**Answer Excerpt:** {tc.get('answer_preview', '')}")
+                    st.write(f"**MRR Rank Score:** `{tc.get('mrr')}` | **Latency:** `{tc.get('delay_seconds')}s`")
+                    st.info(f"**🤖 LLM Judge Reasoning:** {tc.get('judge_reason')}")
+
+        except Exception as read_err:
+            st.warning(f"Could not read evaluation file: {read_err}")
+    else:
+        st.info("No benchmark results yet. Click **'🚀 Run Evaluation Benchmark'** above to generate results!")
